@@ -30,7 +30,7 @@ export default function AdminPostsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredPosts = posts.filter((p) =>
-    p.title.toLowerCase().includes(searchQuery.toLowerCase())
+    p.title.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleSubmit = async (data: PostFormData) => {

@@ -44,7 +44,7 @@ export default function AdminProjectsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredProjects = projects.filter((p) =>
-    p.title.toLowerCase().includes(searchQuery.toLowerCase())
+    p.title.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleSubmit = async (data: ProjectFormData) => {
@@ -71,6 +71,10 @@ export default function AdminProjectsPage() {
       await removeProject(deleteTargetId);
       setDeleteTargetId(null);
     }
+  };
+
+  const toggleFeatured = async (project: Project) => {
+    await editProject(project.id, { featured: !project.featured });
   };
 
   if (loading) {
@@ -137,7 +141,9 @@ export default function AdminProjectsPage() {
       {/* Project List */}
       {filteredProjects.length === 0 ? (
         <div className="text-center text-muted-foreground py-16">
-          {searchQuery ? "검색 결과가 없습니다." : "등록된 프로젝트가 없습니다."}
+          {searchQuery
+            ? "검색 결과가 없습니다."
+            : "등록된 프로젝트가 없습니다."}
         </div>
       ) : (
         <div className="flex flex-col gap-3">
@@ -168,6 +174,21 @@ export default function AdminProjectsPage() {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  onClick={() => toggleFeatured(project)}
+                  title={project.featured ? "대표 해제" : "대표로 설정"}
+                >
+                  <Star
+                    className={`size-3.5 ${
+                      project.featured
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-muted-foreground"
+                    }`}
+                  />
+                </Button>
                 {project.githubUrl && (
                   <Link
                     href={project.githubUrl}

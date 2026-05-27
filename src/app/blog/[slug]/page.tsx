@@ -1,5 +1,11 @@
 import { notFound } from "next/navigation";
-import { Calendar, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Calendar,
+  ArrowLeft,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { format } from "date-fns";
@@ -36,7 +42,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   const allPosts = await getPublishedPosts();
   const sortedPosts = allPosts.sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
   );
   const currentIndex = sortedPosts.findIndex((p) => p.slug === slug);
   const prevPost = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null;

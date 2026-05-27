@@ -70,7 +70,9 @@ export function ProjectForm({
                 alt="썸네일 미리보기"
                 fill
                 className="object-cover"
-                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
               />
             </div>
           )}
