@@ -1,6 +1,41 @@
 # 6단계 — Admin Dashboard
 
-**상태: 🔶 부분 완료**
+**상태: ✅ 완료**
+
+---
+
+## 구현된 작업
+
+| 파일                                    | 상태 | 내용                                                    |
+| --------------------------------------- | ---- | ------------------------------------------------------- |
+| `src/components/admin/adminNav.ts`      | ✅   | 관리자 네비게이션 설정 (카테고리 메뉴 포함)             |
+| `src/components/admin/AdminSidebar.tsx` | ✅   | 사이드바 (활성 링크, 사이트로 돌아가기)                 |
+| `src/app/admin/layout.tsx`              | ✅   | 관리자 레이아웃 (Sidebar + content)                     |
+| `src/app/admin/page.tsx`                | ✅   | 대시보드 통계 카드 + 빠른 링크                          |
+| `src/app/admin/posts/page.tsx`          | ✅   | 포스트 CRUD 목록 + 검색 필터 + 공개 토글 + AlertDialog  |
+| `src/components/admin/PostForm.tsx`     | ✅   | 포스트 폼 (카테고리 Select, 썸네일 미리보기 포함)       |
+| `src/app/admin/projects/page.tsx`       | ✅   | 프로젝트 CRUD 목록 + 검색 + featured 토글 + AlertDialog |
+| `src/components/admin/ProjectForm.tsx`  | ✅   | 프로젝트 폼 (썸네일 미리보기 포함)                      |
+| `src/app/admin/categories/page.tsx`     | ✅   | 카테고리 CRUD 관리 페이지                               |
+| `src/hooks/useCategories.ts`            | ✅   | 카테고리 상태 관리 훅                                   |
+| `src/lib/services/categories.ts`        | ✅   | 카테고리 CRUD 서비스 레이어                             |
+| `src/components/ui/alert-dialog.tsx`    | ✅   | shadcn AlertDialog 컴포넌트                             |
+
+---
+
+## 미완료 항목
+
+| 항목                  | 우선순위 | 설명                                                                  |
+| --------------------- | -------- | --------------------------------------------------------------------- |
+| Admin 인증            | 🟡 중간  | 현재 `/admin`에 인증 없음. Firebase Auth 또는 단순 패스워드 보호 필요 |
+| 최근 글/프로젝트 목록 | 🟢 낙음  | 대시보드에 최근 수정일 summary 없음                                   |
+| Table 컴포넌트 교체   | 🟢 낙음  | 현재 Card 목록 형태. shadcn `Table` 컴포넌트로 교체하면 더 깔끔함     |
+
+---
+
+## 다음 단계
+
+→ [07-firestore.md](./07-firestore.md)
 
 ---
 

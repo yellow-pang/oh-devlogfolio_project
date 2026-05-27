@@ -29,9 +29,9 @@ Firebase Hosting + Cloud Firestore 기반의 개발자 포트폴리오 겸 학�
 | 1   | 프로젝트 구조 · 패키지 설치 · 타입 정의          | ✅ 완료      | [01-setup.md](./01-setup.md)                 |
 | 2   | 공통 레이아웃 (Header / Footer / ThemeToggle)    | ✅ 완료      | [02-layout.md](./02-layout.md)               |
 | 3   | Home 페이지 (Hero / Projects / Skills / Contact) | ✅ 완료      | [03-home.md](./03-home.md)                   |
-| 4   | Blog 목록 · 상세 페이지                          | ✅ 완료      | [04-blog.md](./04-blog.md)                   |
-| 5   | Projects 전용 페이지 (`/projects`)               | ❌ 미구현    | [05-projects-page.md](./05-projects-page.md) |
-| 6   | Admin Dashboard CRUD 완성                        | 🔶 부분 완료 | [06-admin.md](./06-admin.md)                 |
+| 4   | Blog 목록 · 상세 · 검색/필터 · 이전/다음 글      | ✅ 완료      | [04-blog.md](./04-blog.md)                   |
+| 5   | Projects 전용 페이지 (`/projects`)               | ✅ 완료      | [05-projects-page.md](./05-projects-page.md) |
+| 6   | Admin Dashboard CRUD + 카테고리 관리             | ✅ 완료      | [06-admin.md](./06-admin.md)                 |
 | 7   | Firestore 연결 (mock → 실제 DB)                  | ❌ 미구현    | [07-firestore.md](./07-firestore.md)         |
 | 8   | Firebase Hosting 배포 설정                       | 🔶 부분 완료 | [08-hosting.md](./08-hosting.md)             |
 
