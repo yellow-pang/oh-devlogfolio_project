@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "firebase/auth";
 import { cn } from "@/lib/utils";
 import { adminNav } from "./adminNav";
-import { Code2 } from "lucide-react";
+import { auth } from "@/lib/firebase/config";
+import { Code2, LogOut } from "lucide-react";
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -46,14 +48,21 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      {/* Back to site */}
-      <div className="px-3 py-4 border-t">
+      {/* Bottom actions */}
+      <div className="px-3 py-4 border-t space-y-1">
         <Link
           href="/"
           className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
         >
           ← 사이트로 돌아가기
         </Link>
+        <button
+          onClick={() => signOut(auth)}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-destructive hover:bg-accent transition-colors"
+        >
+          <LogOut className="size-4" />
+          로그아웃
+        </button>
       </div>
     </aside>
   );
