@@ -6,6 +6,7 @@ export interface Post {
   content: string;
   thumbnailUrl: string;
   tags: string[];
+  category?: string;
   published: boolean;
   createdAt: string;
   updatedAt: string;

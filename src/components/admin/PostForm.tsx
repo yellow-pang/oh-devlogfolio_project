@@ -1,10 +1,11 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import Image from "next/image";
 import { PostFormData } from "@/types/post";
 
 interface PostFormProps {
@@ -17,6 +18,7 @@ export function PostForm({ defaultValues, onSubmit, onCancel }: PostFormProps) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { isSubmitting },
   } = useForm<PostFormData>({
     defaultValues: {
@@ -27,9 +29,12 @@ export function PostForm({ defaultValues, onSubmit, onCancel }: PostFormProps) {
       thumbnailUrl:
         defaultValues?.thumbnailUrl ?? "/images/post-placeholder.png",
       tags: defaultValues?.tags ?? [],
+      category: defaultValues?.category ?? "",
       published: defaultValues?.published ?? false,
     },
   });
+
+  const thumbnailUrl = useWatch({ control, name: "thumbnailUrl" });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -63,6 +68,17 @@ export function PostForm({ defaultValues, onSubmit, onCancel }: PostFormProps) {
           {...register("thumbnailUrl")}
           placeholder="/images/post.png 또는 https://..."
         />
+        {thumbnailUrl && (
+          <div className="relative w-full aspect-video rounded-md overflow-hidden bg-muted mt-2">
+            <Image
+              src={thumbnailUrl}
+              alt="썸네일 미리보기"
+              fill
+              className="object-cover"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Excerpt */}
@@ -104,6 +120,16 @@ export function PostForm({ defaultValues, onSubmit, onCancel }: PostFormProps) {
           })}
           placeholder="React, TypeScript"
           defaultValue={defaultValues?.tags?.join(", ")}
+        />
+      </div>
+
+      {/* Category */}
+      <div className="space-y-1.5">
+        <Label htmlFor="category">카테고리</Label>
+        <Input
+          id="category"
+          {...register("category")}
+          placeholder="알고리즘 / 개발일지 / 언어도구 / 개념정리 / 회고"
         />
       </div>
 

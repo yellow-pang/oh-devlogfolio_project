@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Trash2, Plus, Eye, EyeOff } from "lucide-react";
+import { Pencil, Trash2, Plus, Eye, EyeOff, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -26,6 +27,11 @@ export default function AdminPostsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Post | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredPosts = posts.filter((p) =>
+    p.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleSubmit = async (data: PostFormData) => {
     if (editTarget) {
@@ -76,15 +82,26 @@ export default function AdminPostsPage() {
             {posts.filter((p) => p.published).length}개
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setEditTarget(null);
-            setFormOpen(true);
-          }}
-        >
-          <Plus className="size-4 mr-1.5" />
-          포스트 작성
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="제목 검색..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-8 w-48 text-sm"
+            />
+          </div>
+          <Button
+            onClick={() => {
+              setEditTarget(null);
+              setFormOpen(true);
+            }}
+          >
+            <Plus className="size-4 mr-1.5" />
+            포스트 작성
+          </Button>
+        </div>
       </div>
 
       {/* Post Form (inline) */}
@@ -109,13 +126,13 @@ export default function AdminPostsPage() {
       )}
 
       {/* Post List */}
-      {posts.length === 0 ? (
+      {filteredPosts.length === 0 ? (
         <div className="text-center text-muted-foreground py-16">
-          작성된 포스트가 없습니다.
+          {searchQuery ? "검색 결과가 없습니다." : "작성된 포스트가 없습니다."}
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {posts.map((post) => (
+          {filteredPosts.map((post) => (
             <Card
               key={post.id}
               className="flex flex-col sm:flex-row sm:items-center gap-4 p-4"

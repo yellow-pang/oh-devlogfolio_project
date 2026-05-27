@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Calendar, ArrowLeft, Tag } from "lucide-react";
+import { Calendar, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { format } from "date-fns";
@@ -33,6 +33,17 @@ export default async function BlogPostPage({ params }: Props) {
   const post = await getPostBySlug(slug);
 
   if (!post || !post.published) notFound();
+
+  const allPosts = await getPublishedPosts();
+  const sortedPosts = allPosts.sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+  const currentIndex = sortedPosts.findIndex((p) => p.slug === slug);
+  const prevPost = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null;
+  const nextPost =
+    currentIndex < sortedPosts.length - 1
+      ? sortedPosts[currentIndex + 1]
+      : null;
 
   return (
     <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -84,6 +95,44 @@ export default async function BlogPostPage({ params }: Props) {
       <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-img:rounded-xl prose-a:no-underline">
         <MarkdownContent content={post.content} />
       </div>
+
+      {/* 이전/다음 글 네비게이션 */}
+      {(prevPost || nextPost) && (
+        <nav className="mt-16 pt-8 border-t grid grid-cols-2 gap-4">
+          <div>
+            {prevPost && (
+              <Link
+                href={`/blog/${prevPost.slug}`}
+                className="group flex flex-col gap-1 text-sm"
+              >
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <ChevronLeft className="size-3.5" />
+                  이전 글
+                </span>
+                <span className="font-medium group-hover:text-primary transition-colors line-clamp-2">
+                  {prevPost.title}
+                </span>
+              </Link>
+            )}
+          </div>
+          <div className="text-right">
+            {nextPost && (
+              <Link
+                href={`/blog/${nextPost.slug}`}
+                className="group flex flex-col gap-1 text-sm items-end"
+              >
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  다음 글
+                  <ChevronRight className="size-3.5" />
+                </span>
+                <span className="font-medium group-hover:text-primary transition-colors line-clamp-2">
+                  {nextPost.title}
+                </span>
+              </Link>
+            )}
+          </div>
+        </nav>
+      )}
     </article>
   );
 }
