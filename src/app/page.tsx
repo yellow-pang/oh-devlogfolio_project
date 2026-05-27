@@ -2,11 +2,17 @@ import { HeroSection } from "@/components/portfolio/HeroSection";
 import { ProjectList } from "@/components/portfolio/ProjectList";
 import { SkillSection } from "@/components/portfolio/SkillSection";
 import { ContactSection } from "@/components/portfolio/ContactSection";
+import { RecentPostsSection } from "@/components/blog/RecentPostsSection";
 import { Separator } from "@/components/ui/separator";
 import { getAllProjects } from "@/lib/services/projects";
+import { getPublishedPosts } from "@/lib/services/posts";
 
 export default async function HomePage() {
-  const projects = await getAllProjects();
+  const [projects, allPosts] = await Promise.all([
+    getAllProjects(),
+    getPublishedPosts(),
+  ]);
+  const recentPosts = allPosts.slice(0, 3);
 
   return (
     <div className="relative">
@@ -15,6 +21,8 @@ export default async function HomePage() {
       <ProjectList projects={projects} />
       <Separator />
       <SkillSection />
+      <Separator />
+      <RecentPostsSection posts={recentPosts} />
       <Separator />
       <ContactSection />
     </div>

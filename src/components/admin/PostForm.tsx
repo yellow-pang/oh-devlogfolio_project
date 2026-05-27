@@ -1,11 +1,20 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import Image from "next/image";
 import { PostFormData } from "@/types/post";
+import { useCategories } from "@/hooks/useCategories";
 
 interface PostFormProps {
   defaultValues?: Partial<PostFormData> & { id?: string };
@@ -17,6 +26,7 @@ export function PostForm({ defaultValues, onSubmit, onCancel }: PostFormProps) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { isSubmitting },
   } = useForm<PostFormData>({
     defaultValues: {
@@ -27,9 +37,13 @@ export function PostForm({ defaultValues, onSubmit, onCancel }: PostFormProps) {
       thumbnailUrl:
         defaultValues?.thumbnailUrl ?? "/images/post-placeholder.png",
       tags: defaultValues?.tags ?? [],
+      category: defaultValues?.category ?? "",
       published: defaultValues?.published ?? false,
     },
   });
+
+  const thumbnailUrl = useWatch({ control, name: "thumbnailUrl" });
+  const { categories } = useCategories();
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -63,6 +77,19 @@ export function PostForm({ defaultValues, onSubmit, onCancel }: PostFormProps) {
           {...register("thumbnailUrl")}
           placeholder="/images/post.png 또는 https://..."
         />
+        {thumbnailUrl && (
+          <div className="relative w-full aspect-video rounded-md overflow-hidden bg-muted mt-2">
+            <Image
+              src={thumbnailUrl}
+              alt="썸네일 미리보기"
+              fill
+              className="object-cover"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Excerpt */}
@@ -104,6 +131,35 @@ export function PostForm({ defaultValues, onSubmit, onCancel }: PostFormProps) {
           })}
           placeholder="React, TypeScript"
           defaultValue={defaultValues?.tags?.join(", ")}
+        />
+      </div>
+
+      {/* Category */}
+      <div className="space-y-1.5">
+        <Label htmlFor="category">카테고리</Label>
+        <Controller
+          control={control}
+          name="category"
+          render={({ field }) => (
+            <Select
+              value={field.value ?? ""}
+              onValueChange={(val) =>
+                field.onChange(val === "__none__" ? "" : val)
+              }
+            >
+              <SelectTrigger id="category" className="w-full">
+                <SelectValue placeholder="카테고리 선택 (선택사항)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">미분류</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.name}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         />
       </div>
 

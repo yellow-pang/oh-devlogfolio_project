@@ -8,10 +8,12 @@ import {
   Plus,
   ExternalLink,
   GitFork,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants, Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -39,6 +41,11 @@ export default function AdminProjectsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Project | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredProjects = projects.filter((p) =>
+    p.title.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   const handleSubmit = async (data: ProjectFormData) => {
     if (editTarget) {
@@ -66,6 +73,10 @@ export default function AdminProjectsPage() {
     }
   };
 
+  const toggleFeatured = async (project: Project) => {
+    await editProject(project.id, { featured: !project.featured });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-40 text-muted-foreground">
@@ -84,15 +95,26 @@ export default function AdminProjectsPage() {
             총 {projects.length}개의 프로젝트
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setEditTarget(null);
-            setFormOpen(true);
-          }}
-        >
-          <Plus className="size-4 mr-1.5" />
-          프로젝트 추가
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="제목 검색..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-8 w-48 text-sm"
+            />
+          </div>
+          <Button
+            onClick={() => {
+              setEditTarget(null);
+              setFormOpen(true);
+            }}
+          >
+            <Plus className="size-4 mr-1.5" />
+            프로젝트 추가
+          </Button>
+        </div>
       </div>
 
       {/* Project Form (inline) */}
@@ -117,13 +139,15 @@ export default function AdminProjectsPage() {
       )}
 
       {/* Project List */}
-      {projects.length === 0 ? (
+      {filteredProjects.length === 0 ? (
         <div className="text-center text-muted-foreground py-16">
-          등록된 프로젝트가 없습니다.
+          {searchQuery
+            ? "검색 결과가 없습니다."
+            : "등록된 프로젝트가 없습니다."}
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {projects.map((project) => (
+          {filteredProjects.map((project) => (
             <Card
               key={project.id}
               className="flex flex-col sm:flex-row sm:items-center gap-4 p-4"
@@ -150,6 +174,21 @@ export default function AdminProjectsPage() {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  onClick={() => toggleFeatured(project)}
+                  title={project.featured ? "대표 해제" : "대표로 설정"}
+                >
+                  <Star
+                    className={`size-3.5 ${
+                      project.featured
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-muted-foreground"
+                    }`}
+                  />
+                </Button>
                 {project.githubUrl && (
                   <Link
                     href={project.githubUrl}

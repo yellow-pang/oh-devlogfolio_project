@@ -1,10 +1,11 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import Image from "next/image";
 import { ProjectFormData } from "@/types/project";
 
 interface ProjectFormProps {
@@ -21,6 +22,7 @@ export function ProjectForm({
   const {
     register,
     handleSubmit,
+    control,
     formState: { isSubmitting },
   } = useForm<ProjectFormData>({
     defaultValues: {
@@ -37,6 +39,8 @@ export function ProjectForm({
       order: defaultValues?.order ?? 99,
     },
   });
+
+  const thumbnailUrl = useWatch({ control, name: "thumbnailUrl" });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -59,6 +63,19 @@ export function ProjectForm({
             {...register("thumbnailUrl")}
             placeholder="/images/project.png 또는 https://..."
           />
+          {thumbnailUrl && (
+            <div className="relative w-full aspect-video rounded-md overflow-hidden bg-muted mt-2">
+              <Image
+                src={thumbnailUrl}
+                alt="썸네일 미리보기"
+                fill
+                className="object-cover"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
 
