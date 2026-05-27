@@ -1,0 +1,164 @@
+"use client";
+
+import { useState } from "react";
+import { Pencil, Trash2, Plus, Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { usePosts } from "@/hooks/usePosts";
+import { Post, PostFormData } from "@/types/post";
+import { PostForm } from "@/components/admin/PostForm";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+
+export default function AdminPostsPage() {
+  const { posts, loading, addPost, editPost, removePost } = usePosts();
+  const [formOpen, setFormOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<Post | null>(null);
+
+  const handleSubmit = async (data: PostFormData) => {
+    if (editTarget) {
+      await editPost(editTarget.id, data);
+    } else {
+      await addPost(data);
+    }
+    setFormOpen(false);
+    setEditTarget(null);
+  };
+
+  const handleEdit = (post: Post) => {
+    setEditTarget(post);
+    setFormOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("정말 삭제하시겠습니까?")) {
+      await removePost(id);
+    }
+  };
+
+  const togglePublish = async (post: Post) => {
+    await editPost(post.id, { published: !post.published });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-40 text-muted-foreground">
+        불러오는 중...
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">포스트 관리</h1>
+          <p className="text-muted-foreground mt-1">
+            총 {posts.length}개 · 게시됨{" "}
+            {posts.filter((p) => p.published).length}개
+          </p>
+        </div>
+        <Button
+          onClick={() => {
+            setEditTarget(null);
+            setFormOpen(true);
+          }}
+        >
+          <Plus className="size-4 mr-1.5" />
+          포스트 작성
+        </Button>
+      </div>
+
+      {/* Post Form (inline) */}
+      {formOpen && (
+        <Card className="mb-6 border-primary/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              {editTarget ? "포스트 수정" : "새 포스트"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PostForm
+              defaultValues={editTarget ?? undefined}
+              onSubmit={handleSubmit}
+              onCancel={() => {
+                setFormOpen(false);
+                setEditTarget(null);
+              }}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Post List */}
+      {posts.length === 0 ? (
+        <div className="text-center text-muted-foreground py-16">
+          작성된 포스트가 없습니다.
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {posts.map((post) => (
+            <Card
+              key={post.id}
+              className="flex flex-col sm:flex-row sm:items-center gap-4 p-4"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-sm truncate">
+                    {post.title}
+                  </span>
+                  <Badge
+                    variant={post.published ? "default" : "outline"}
+                    className="text-xs shrink-0"
+                  >
+                    {post.published ? "게시됨" : "비공개"}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  slug: {post.slug}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {format(new Date(post.createdAt), "PPP", { locale: ko })}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  onClick={() => togglePublish(post)}
+                  title={post.published ? "비공개로 전환" : "게시하기"}
+                >
+                  {post.published ? (
+                    <Eye className="size-3.5" />
+                  ) : (
+                    <EyeOff className="size-3.5" />
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  onClick={() => handleEdit(post)}
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-destructive hover:text-destructive"
+                  onClick={() => handleDelete(post.id)}
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
