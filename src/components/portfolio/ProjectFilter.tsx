@@ -17,7 +17,7 @@ export function ProjectFilter({ projects }: ProjectFilterProps) {
   const allTechStacks = useMemo(() => {
     const techSet = new Set<string>();
     projects.forEach((project) =>
-      project.techStack.forEach((tech) => techSet.add(tech))
+      project.techStack.forEach((tech) => techSet.add(tech)),
     );
     return Array.from(techSet).sort();
   }, [projects]);
@@ -25,7 +25,7 @@ export function ProjectFilter({ projects }: ProjectFilterProps) {
   const filteredProjects = useMemo(() => {
     if (selectedTech === null) return projects;
     return projects.filter((project) =>
-      project.techStack.includes(selectedTech)
+      project.techStack.includes(selectedTech),
     );
   }, [projects, selectedTech]);
 
