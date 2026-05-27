@@ -20,8 +20,13 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  const posts = await getPublishedPosts();
-  return posts.map((post) => ({ slug: post.slug }));
+  try {
+    const posts = await getPublishedPosts();
+    return posts.map((post) => ({ slug: post.slug }));
+  } catch (error) {
+    console.error("[generateStaticParams] Firestore 호출 실패:", error);
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: Props) {
