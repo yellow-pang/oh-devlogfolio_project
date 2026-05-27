@@ -7,6 +7,7 @@ import { ko } from "date-fns/locale";
 import { buttonVariants } from "@/components/ui/button";
 import { TagBadge } from "@/components/common/TagBadge";
 import { getPostBySlug, getPublishedPosts } from "@/lib/services/posts";
+import { MarkdownContent } from "@/components/blog/MarkdownContent";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -80,11 +81,8 @@ export default async function BlogPostPage({ params }: Props) {
       )}
 
       {/* Content */}
-      <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-pre:bg-muted prose-pre:text-foreground prose-code:text-primary">
-        {/* TODO: 마크다운 렌더링 (2단계에서 react-markdown 추가 예정) */}
-        <div className="whitespace-pre-wrap font-mono text-sm bg-muted rounded-lg p-4">
-          {post.content}
-        </div>
+      <div className="prose prose-neutral dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-img:rounded-xl prose-a:no-underline">
+        <MarkdownContent content={post.content} />
       </div>
     </article>
   );

@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
+
+/* 코드 하이라이트 — github-dark 테마 기반 커스텀 */
+@import "highlight.js/styles/github.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -127,4 +131,40 @@
   html {
     @apply font-sans;
   }
+}
+
+/* 다크 모드 코드 하이라이트 오버라이드 */
+.dark .hljs {
+  background: oklch(0.205 0 0);
+  color: #c9d1d9;
+}
+.dark .hljs-comment,
+.dark .hljs-quote {
+  color: #8b949e;
+}
+.dark .hljs-keyword,
+.dark .hljs-selector-tag,
+.dark .hljs-subst {
+  color: #ff7b72;
+}
+.dark .hljs-string,
+.dark .hljs-doctag,
+.dark .hljs-attr {
+  color: #a5d6ff;
+}
+.dark .hljs-number,
+.dark .hljs-literal,
+.dark .hljs-variable,
+.dark .hljs-template-variable {
+  color: #79c0ff;
+}
+.dark .hljs-title,
+.dark .hljs-section,
+.dark .hljs-built_in {
+  color: #d2a8ff;
+}
+.dark .hljs-name,
+.dark .hljs-type,
+.dark .hljs-class {
+  color: #7ee787;
 }
