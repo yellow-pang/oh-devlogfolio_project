@@ -19,6 +19,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useProjects } from "@/hooks/useProjects";
 import { Project, ProjectFormData } from "@/types/project";
 import { ProjectForm } from "@/components/admin/ProjectForm";
@@ -28,6 +38,7 @@ export default function AdminProjectsPage() {
     useProjects();
   const [formOpen, setFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Project | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   const handleSubmit = async (data: ProjectFormData) => {
     if (editTarget) {
@@ -44,9 +55,14 @@ export default function AdminProjectsPage() {
     setFormOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("정말 삭제하시겠습니까?")) {
-      await removeProject(id);
+  const handleDelete = (id: string) => {
+    setDeleteTargetId(id);
+  };
+
+  const executeDelete = async () => {
+    if (deleteTargetId) {
+      await removeProject(deleteTargetId);
+      setDeleteTargetId(null);
     }
   };
 
@@ -181,6 +197,30 @@ export default function AdminProjectsPage() {
           ))}
         </div>
       )}
+
+      {/* 삭제 확인 다이얼로그 */}
+      <AlertDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => !open && setDeleteTargetId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>프로젝트를 삭제하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription>
+              삭제된 프로젝트는 복구할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={executeDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              삭제
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

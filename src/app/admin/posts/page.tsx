@@ -5,6 +5,16 @@ import { Pencil, Trash2, Plus, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { usePosts } from "@/hooks/usePosts";
 import { Post, PostFormData } from "@/types/post";
 import { PostForm } from "@/components/admin/PostForm";
@@ -15,6 +25,7 @@ export default function AdminPostsPage() {
   const { posts, loading, addPost, editPost, removePost } = usePosts();
   const [formOpen, setFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Post | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   const handleSubmit = async (data: PostFormData) => {
     if (editTarget) {
@@ -31,9 +42,14 @@ export default function AdminPostsPage() {
     setFormOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("정말 삭제하시겠습니까?")) {
-      await removePost(id);
+  const handleDelete = (id: string) => {
+    setDeleteTargetId(id);
+  };
+
+  const executeDelete = async () => {
+    if (deleteTargetId) {
+      await removePost(deleteTargetId);
+      setDeleteTargetId(null);
     }
   };
 
@@ -159,6 +175,30 @@ export default function AdminPostsPage() {
           ))}
         </div>
       )}
+
+      {/* 삭제 확인 다이얼로그 */}
+      <AlertDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => !open && setDeleteTargetId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>포스트를 삭제하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription>
+              삭제된 포스트는 복구할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={executeDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              삭제
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
