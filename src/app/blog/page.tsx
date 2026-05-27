@@ -1,5 +1,5 @@
 import { getPublishedPosts } from "@/lib/services/posts";
-import { PostCard } from "@/components/blog/PostCard";
+import { BlogFilter } from "@/components/blog/BlogFilter";
 import { PageHeader } from "@/components/common/PageHeader";
 
 export const metadata = {
@@ -19,11 +19,7 @@ export default async function BlogPage() {
           아직 작성된 포스트가 없습니다.
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post, index) => (
-            <PostCard key={post.id} post={post} index={index} />
-          ))}
-        </div>
+        <BlogFilter posts={posts} />
       )}
     </div>
   );
