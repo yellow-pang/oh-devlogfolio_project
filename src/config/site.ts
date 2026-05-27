@@ -13,7 +13,7 @@ export const siteConfig = {
   },
   nav: [
     { label: "홈", href: "/" },
-    { label: "프로젝트", href: "/#projects" },
+    { label: "프로젝트", href: "/projects" },
     { label: "블로그", href: "/blog" },
   ],
 } as const;
