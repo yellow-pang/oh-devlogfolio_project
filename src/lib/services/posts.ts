@@ -1,54 +1,93 @@
-/**
- * 포스트 데이터 서비스
- *
- * 현재는 Mock 데이터를 반환합니다.
- * 5단계(Firebase 연결)에서 Firestore 구현으로 교체하세요.
- *
- * 교체 방법:
- * - import { db } from "@/lib/firebase/config"
- * - collection(db, "posts"), getDocs, addDoc, updateDoc, deleteDoc 사용
- */
-
 import { Post, PostFormData } from "@/types/post";
-import { mockPosts } from "@/lib/mock/posts";
+import { db } from "@/lib/firebase/config";
+import {
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  orderBy,
+  where,
+  serverTimestamp,
+  Timestamp,
+} from "firebase/firestore";
+
+// Firestore Timestamp → ISO string 변환
+function toDateString(ts: Timestamp | string | undefined): string {
+  if (ts instanceof Timestamp) return ts.toDate().toISOString();
+  return ts ?? new Date().toISOString();
+}
 
 // ─── READ ────────────────────────────────────────────────────────────────────
 
 export async function getAllPosts(): Promise<Post[]> {
-  // TODO: Firestore 교체 시 → getDocs(query(collection(db, "posts"), orderBy("createdAt", "desc")))
-  return [...mockPosts].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+    createdAt: toDateString(d.data().createdAt),
+    updatedAt: toDateString(d.data().updatedAt),
+  })) as Post[];
 }
 
 export async function getPublishedPosts(): Promise<Post[]> {
-  const posts = await getAllPosts();
-  return posts.filter((p) => p.published);
+  const q = query(
+    collection(db, "posts"),
+    where("published", "==", true),
+    orderBy("createdAt", "desc"),
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+    createdAt: toDateString(d.data().createdAt),
+    updatedAt: toDateString(d.data().updatedAt),
+  })) as Post[];
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
-  // TODO: Firestore 교체 시 → getDocs(query(collection(db, "posts"), where("slug", "==", slug)))
-  return mockPosts.find((p) => p.slug === slug) ?? null;
+  const q = query(collection(db, "posts"), where("slug", "==", slug));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  const d = snap.docs[0];
+  return {
+    id: d.id,
+    ...d.data(),
+    createdAt: toDateString(d.data().createdAt),
+    updatedAt: toDateString(d.data().updatedAt),
+  } as Post;
 }
 
 export async function getPostById(id: string): Promise<Post | null> {
-  // TODO: Firestore 교체 시 → getDoc(doc(db, "posts", id))
-  return mockPosts.find((p) => p.id === id) ?? null;
+  const snap = await getDoc(doc(db, "posts", id));
+  if (!snap.exists()) return null;
+  return {
+    id: snap.id,
+    ...snap.data(),
+    createdAt: toDateString(snap.data().createdAt),
+    updatedAt: toDateString(snap.data().updatedAt),
+  } as Post;
 }
 
 // ─── CREATE ──────────────────────────────────────────────────────────────────
 
 export async function createPost(data: PostFormData): Promise<Post> {
-  // TODO: Firestore 교체 시 → addDoc(collection(db, "posts"), { ...data, createdAt, updatedAt })
-  const now = new Date().toISOString();
-  const newPost: Post = {
+  const ref = await addDoc(collection(db, "posts"), {
     ...data,
-    id: crypto.randomUUID(),
-    createdAt: now,
-    updatedAt: now,
-  };
-  mockPosts.push(newPost);
-  return newPost;
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  const snap = await getDoc(ref);
+  return {
+    id: snap.id,
+    ...snap.data(),
+    createdAt: toDateString(snap.data()?.createdAt),
+    updatedAt: toDateString(snap.data()?.updatedAt),
+  } as Post;
 }
 
 // ─── UPDATE ──────────────────────────────────────────────────────────────────
@@ -57,23 +96,23 @@ export async function updatePost(
   id: string,
   data: Partial<PostFormData>,
 ): Promise<Post> {
-  // TODO: Firestore 교체 시 → updateDoc(doc(db, "posts", id), { ...data, updatedAt })
-  const index = mockPosts.findIndex((p) => p.id === id);
-  if (index === -1) throw new Error(`Post not found: ${id}`);
-
-  const updated: Post = {
-    ...mockPosts[index],
+  const ref = doc(db, "posts", id);
+  await updateDoc(ref, {
     ...data,
-    updatedAt: new Date().toISOString(),
-  };
-  mockPosts[index] = updated;
-  return updated;
+    updatedAt: serverTimestamp(),
+  });
+  const snap = await getDoc(ref);
+  if (!snap.exists()) throw new Error(`Post not found: ${id}`);
+  return {
+    id: snap.id,
+    ...snap.data(),
+    createdAt: toDateString(snap.data().createdAt),
+    updatedAt: toDateString(snap.data().updatedAt),
+  } as Post;
 }
 
 // ─── DELETE ──────────────────────────────────────────────────────────────────
 
 export async function deletePost(id: string): Promise<void> {
-  // TODO: Firestore 교체 시 → deleteDoc(doc(db, "posts", id))
-  const index = mockPosts.findIndex((p) => p.id === id);
-  if (index !== -1) mockPosts.splice(index, 1);
+  await deleteDoc(doc(db, "posts", id));
 }
