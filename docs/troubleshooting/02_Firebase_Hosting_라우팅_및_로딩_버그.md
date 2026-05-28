@@ -205,3 +205,96 @@ Firebase CLI 배포 시 생성되는 캐시 파일(`hosting.*.cache`)이 git에 
 Firebase Hosting 설정 변경 후 재배포해도 브라우저 캐시로 인해  
 이전 동작이 유지되는 것처럼 보일 수 있음.  
 **시크릿 창**으로 먼저 확인 후, 일반 창은 강력 새로고침(`Ctrl+Shift+R`) 또는 캐시 삭제 후 테스트.
+
+---
+
+## 8. 재발 — 방법 3 오판으로 인한 전체 경로 404
+
+> 발생일: 2026-05-28 (hotfix/admin-login-fix 브랜치)
+
+### 증상
+
+`firebase deploy --only hosting` 후 브라우저 콘솔:
+
+```
+GET https://oh-devlogfolio.web.app/admin/login  404 (Not Found)
+HEAD https://oh-devlogfolio.web.app/projects    404 (Not Found)
+HEAD https://oh-devlogfolio.web.app/blog        404 (Not Found)
+```
+
+`/admin/login`뿐 아니라 `/projects`, `/blog` 등 모든 경로 404.
+
+### 원인 — 4절 방법 3의 전제가 틀렸음
+
+4절에서 방법 3을 선택한 근거 중 하나가  
+**"Firebase Hosting은 cleanUrls 없이도 .html 파일을 확장자 없는 URL로 기본 서빙한다"** 였으나,  
+이는 사실이 아님.
+
+Firebase Hosting의 실제 요청 처리 순서:
+
+```
+1. 정확한 파일 매칭  → /admin/login  (파일 없음, 실제 파일명은 admin/login.html)
+2. 디렉토리 index    → /admin/login/index.html  (없음)
+3. rewrites 매칭    → 해당 없음
+4. 404 반환
+```
+
+`cleanUrls: true` 없이는 `.html` 확장자가 포함된 URL(예: `/admin/login.html`)로만 접근 가능.  
+`trailingSlash: false` 빌드 출력은 `out/admin/login.html` (flat) 이므로  
+`cleanUrls` 없이는 확장자 없는 URL에서 항상 404.
+
+### 이전에 cleanUrls를 제거한 이유가 틀린 분석이었음
+
+과거에 `cleanUrls: true` 제거 시 근거로 든 RSC 404:
+
+```
+GET /admin/posts/__next.admin.posts.__PAGE__.txt  404
+```
+
+이것은 `cleanUrls` 자체의 문제가 아니라,  
+당시 `trailingSlash: true` 빌드 상태에서 RSC 파일이 **중첩 디렉토리** 구조로 생성되었기 때문:
+
+```
+out/admin/posts/__next.admin/posts/__PAGE__.txt  (중첩 디렉토리)
+                ↕ cleanUrls가 경로 평탄화
+/admin/posts/__next.admin.posts.__PAGE__.txt     (404)
+```
+
+`trailingSlash: false` 빌드에서 RSC 파일은 **flat `.txt` 파일**로 생성됨:
+
+```
+out/projects/__next.projects.txt   ← cleanUrls는 .html만 처리, .txt 무관
+```
+
+따라서 `trailingSlash: false` + `cleanUrls: true` 조합에서는 RSC 404가 발생하지 않음.
+
+### 최종 수정
+
+`firebase.json`에 `cleanUrls: true` 재추가:
+
+```json
+{
+  "hosting": {
+    "public": "out",
+    "cleanUrls": true,
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "/blog/**",
+        "destination": "/blog.html"
+      }
+    ]
+  }
+}
+```
+
+### 최종 정리 — 올바른 설정 조합
+
+| next.config.ts         | firebase.json     | 결과                                                                    |
+| ---------------------- | ----------------- | ----------------------------------------------------------------------- |
+| `trailingSlash: false` | cleanUrls 없음    | ❌ 모든 경로 404                                                        |
+| `trailingSlash: false` | `cleanUrls: true` | ✅ 정상 서빙, RSC 무영향                                                |
+| `trailingSlash: true`  | `cleanUrls: true` | ❌ RSC 중첩 디렉토리 404                                                |
+| `trailingSlash: true`  | cleanUrls 없음    | ✅ 정상 서빙 (단, blog rewrite 목적지를 `/blog/index.html`로 변경 필요) |
+
+**채택: `trailingSlash: false` + `cleanUrls: true`**
