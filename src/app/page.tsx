@@ -15,17 +15,20 @@ import { Post } from "@/types/post";
 export default function HomePage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [recentPosts, setRecentPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getAllProjects().then(setProjects);
-    getPublishedPosts().then((posts) => setRecentPosts(posts.slice(0, 3)));
+    Promise.all([
+      getAllProjects().then(setProjects),
+      getPublishedPosts().then((posts) => setRecentPosts(posts.slice(0, 3))),
+    ]).finally(() => setLoading(false));
   }, []);
 
   return (
     <div className="relative">
       <HeroSection />
       <Separator />
-      <ProjectList projects={projects} />
+      {!loading && <ProjectList projects={projects} />}
       <Separator />
       <SkillSection />
       <Separator />
