@@ -17,7 +17,7 @@ import {
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
   const [skillRawInputs, setSkillRawInputs] = useState<string[]>(
-    defaultSiteSettings.skills.map((g) => g.items.join(", "))
+    defaultSiteSettings.skills.map((g) => g.items.join(", ")),
   );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -70,7 +70,10 @@ export default function AdminSettingsPage() {
       const skills = [...prev.skills];
       skills[index] = {
         ...skills[index],
-        items: raw.split(",").map((s) => s.trim()).filter(Boolean),
+        items: raw
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
       };
       return { ...prev, skills };
     });
