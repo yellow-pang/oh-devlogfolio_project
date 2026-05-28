@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
-import {
-  Calendar,
-  ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Calendar, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { format } from "date-fns";
