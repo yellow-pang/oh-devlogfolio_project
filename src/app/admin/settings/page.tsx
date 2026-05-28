@@ -16,6 +16,9 @@ import {
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings);
+  const [skillRawInputs, setSkillRawInputs] = useState<string[]>(
+    defaultSiteSettings.skills.map((g) => g.items.join(", ")),
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -23,6 +26,7 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     getSiteSettings().then((data) => {
       setSettings(data);
+      setSkillRawInputs(data.skills.map((g) => g.items.join(", ")));
       setLoading(false);
     });
   }, []);
@@ -52,12 +56,21 @@ export default function AdminSettingsPage() {
     });
   }
 
-  function updateSkillItems(index: number, value: string) {
+  function updateSkillItemsRaw(index: number, value: string) {
+    setSkillRawInputs((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  }
+
+  function parseSkillItems(index: number) {
+    const raw = skillRawInputs[index] ?? "";
     setSettings((prev) => {
       const skills = [...prev.skills];
       skills[index] = {
         ...skills[index],
-        items: value
+        items: raw
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean),
@@ -71,6 +84,7 @@ export default function AdminSettingsPage() {
       ...prev,
       skills: [...prev.skills, { category: "", items: [] }],
     }));
+    setSkillRawInputs((prev) => [...prev, ""]);
   }
 
   function removeSkillGroup(index: number) {
@@ -78,6 +92,7 @@ export default function AdminSettingsPage() {
       ...prev,
       skills: prev.skills.filter((_, i) => i !== index),
     }));
+    setSkillRawInputs((prev) => prev.filter((_, i) => i !== index));
   }
 
   // ── Contact helpers ───────────────────────────────────────────
@@ -97,7 +112,7 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl space-y-8">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -188,8 +203,9 @@ export default function AdminSettingsPage() {
                   기술 목록 (쉼표로 구분)
                 </Label>
                 <Input
-                  value={group.items.join(", ")}
-                  onChange={(e) => updateSkillItems(index, e.target.value)}
+                  value={skillRawInputs[index] ?? ""}
+                  onChange={(e) => updateSkillItemsRaw(index, e.target.value)}
+                  onBlur={() => parseSkillItems(index)}
                   placeholder="React, Next.js, TypeScript"
                 />
               </div>
