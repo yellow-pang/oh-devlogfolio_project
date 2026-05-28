@@ -1,8 +1,10 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, notFound } from "next/navigation";
 import {
   Calendar,
   ArrowLeft,
-  ArrowRight,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -14,47 +16,56 @@ import { buttonVariants } from "@/components/ui/button";
 import { TagBadge } from "@/components/common/TagBadge";
 import { getPostBySlug, getPublishedPosts } from "@/lib/services/posts";
 import { MarkdownContent } from "@/components/blog/MarkdownContent";
+import { Post } from "@/types/post";
 
-interface Props {
-  params: Promise<{ slug: string }>;
-}
+export default function BlogPostPage() {
+  const params = useParams<{ slug: string }>();
+  const slug = params.slug;
 
-export async function generateStaticParams() {
-  try {
-    const posts = await getPublishedPosts();
-    return posts.map((post) => ({ slug: post.slug }));
-  } catch (error) {
-    console.error("[generateStaticParams] Firestore 호출 실패:", error);
-    return [];
+  const [post, setPost] = useState<Post | null | undefined>(undefined);
+  const [prevPost, setPrevPost] = useState<Post | null>(null);
+  const [nextPost, setNextPost] = useState<Post | null>(null);
+
+  useEffect(() => {
+    if (!slug) return;
+
+    async function load() {
+      const [found, allPosts] = await Promise.all([
+        getPostBySlug(slug),
+        getPublishedPosts(),
+      ]);
+
+      if (!found || !found.published) {
+        setPost(null);
+        return;
+      }
+
+      const sorted = allPosts.sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+      const idx = sorted.findIndex((p) => p.slug === slug);
+      setPrevPost(idx > 0 ? sorted[idx - 1] : null);
+      setNextPost(idx < sorted.length - 1 ? sorted[idx + 1] : null);
+      setPost(found);
+    }
+
+    load();
+  }, [slug]);
+
+  // 로딩 중
+  if (post === undefined) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <p className="text-muted-foreground">불러오는 중...</p>
+      </div>
+    );
   }
-}
 
-export async function generateMetadata({ params }: Props) {
-  const { slug } = await params;
-  const post = await getPostBySlug(slug);
-  if (!post) return {};
-  return {
-    title: post.title,
-    description: post.excerpt,
-  };
-}
-
-export default async function BlogPostPage({ params }: Props) {
-  const { slug } = await params;
-  const post = await getPostBySlug(slug);
-
-  if (!post || !post.published) notFound();
-
-  const allPosts = await getPublishedPosts();
-  const sortedPosts = allPosts.sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-  );
-  const currentIndex = sortedPosts.findIndex((p) => p.slug === slug);
-  const prevPost = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null;
-  const nextPost =
-    currentIndex < sortedPosts.length - 1
-      ? sortedPosts[currentIndex + 1]
-      : null;
+  // 포스트 없음
+  if (post === null) {
+    notFound();
+  }
 
   return (
     <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

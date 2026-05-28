@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { HeroSection } from "@/components/portfolio/HeroSection";
 import { ProjectList } from "@/components/portfolio/ProjectList";
 import { SkillSection } from "@/components/portfolio/SkillSection";
@@ -6,13 +9,17 @@ import { RecentPostsSection } from "@/components/blog/RecentPostsSection";
 import { Separator } from "@/components/ui/separator";
 import { getAllProjects } from "@/lib/services/projects";
 import { getPublishedPosts } from "@/lib/services/posts";
+import { Project } from "@/types/project";
+import { Post } from "@/types/post";
 
-export default async function HomePage() {
-  const [projects, allPosts] = await Promise.all([
-    getAllProjects(),
-    getPublishedPosts(),
-  ]);
-  const recentPosts = allPosts.slice(0, 3);
+export default function HomePage() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [recentPosts, setRecentPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    getAllProjects().then(setProjects);
+    getPublishedPosts().then((posts) => setRecentPosts(posts.slice(0, 3)));
+  }, []);
 
   return (
     <div className="relative">
