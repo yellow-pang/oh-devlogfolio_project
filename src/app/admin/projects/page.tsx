@@ -127,6 +127,7 @@ export default function AdminProjectsPage() {
           </CardHeader>
           <CardContent>
             <ProjectForm
+              key={editTarget?.id ?? "new"}
               defaultValues={editTarget ?? undefined}
               onSubmit={handleSubmit}
               onCancel={() => {
