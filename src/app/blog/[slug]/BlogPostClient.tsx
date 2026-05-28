@@ -1,34 +1,33 @@
-import { getPublishedPosts } from "@/lib/services/posts";
-import BlogPostClient from "./BlogPostClient";
+"use client";
+
+import { useEffect, useState } from "react";
+import { notFound } from "next/navigation";
+import {
+  Calendar,
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { buttonVariants } from "@/components/ui/button";
+import { TagBadge } from "@/components/common/TagBadge";
+import { getPostBySlug, getPublishedPosts } from "@/lib/services/posts";
+import { MarkdownContent } from "@/components/blog/MarkdownContent";
+import { Post } from "@/types/post";
 
 interface Props {
-  params: Promise<{ slug: string }>;
+  slug: string;
 }
 
-export async function generateStaticParams() {
-  try {
-    const posts = await getPublishedPosts();
-    return posts.map((post) => ({ slug: post.slug }));
-  } catch (error) {
-    console.error("[generateStaticParams] Firestore 호출 실패:", error);
-    return [];
-  }
-}
-
-export default async function BlogPostPage({ params }: Props) {
-  const { slug } = await params;
-  return <BlogPostClient slug={slug} />;
-}
-  const params = useParams<{ slug: string }>();
-  const slug = params.slug;
-
+export default function BlogPostClient({ slug }: Props) {
   const [post, setPost] = useState<Post | null | undefined>(undefined);
   const [prevPost, setPrevPost] = useState<Post | null>(null);
   const [nextPost, setNextPost] = useState<Post | null>(null);
 
   useEffect(() => {
-    if (!slug) return;
-
     async function load() {
       const [found, allPosts] = await Promise.all([
         getPostBySlug(slug),
@@ -53,7 +52,6 @@ export default async function BlogPostPage({ params }: Props) {
     load();
   }, [slug]);
 
-  // 로딩 중
   if (post === undefined) {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -62,7 +60,6 @@ export default async function BlogPostPage({ params }: Props) {
     );
   }
 
-  // 포스트 없음
   if (post === null) {
     notFound();
   }
