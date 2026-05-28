@@ -12,7 +12,19 @@
 로그인 페이지가 표시되지 않고 홈 화면(`/`)으로 리다이렉트됨.  
 로컬 개발 환경(`npm run dev`)에서는 정상 접속되어 배포 환경 고유 문제임을 확인.
 
-### 증상 2 — 홈 화면 "등록된 프로젝트가 없습니다." 순간 표시
+### 증상 2 — 관리자 페이지 RSC 404 오류
+
+`/admin/login` 접속 후 관리자 화면으로 진입하자 브라우저 콘솔에 다수의 404 오류 발생:
+
+```
+GET /admin/posts/__next.admin.posts.__PAGE__.txt  404 (Not Found)
+GET /admin/projects/__next.admin.projects.txt     404 (Not Found)
+GET /admin/categories/__next.admin.categories.txt 404 (Not Found)
+```
+
+화면은 표시되나 Next.js RSC(React Server Component) 페이로드 파일을 찾지 못하는 상태.
+
+### 증상 3 — 홈 화면 "등록된 프로젝트가 없습니다." 순간 표시
 
 홈 화면(`/`) 접속 시 프로젝트 섹션에 "등록된 프로젝트가 없습니다." 텍스트가  
 Firestore 데이터 로드 전에 순간적으로 표시되다가 실제 데이터로 교체됨.
@@ -46,7 +58,26 @@ Firebase Hosting의 요청 처리 우선순위:
 ]
 ```
 
-### 원인 B — `app/page.tsx` loading 상태 누락
+### 원인 B — `cleanUrls: true`로 인한 RSC 파일 경로 평탄화
+
+증상 1 해결을 위해 catch-all rewrite 제거 후 `cleanUrls: true`를 추가했으나,  
+`cleanUrls`가 Next.js RSC 페이로드 파일의 경로를 의도치 않게 평탄화함.
+
+실제 파일 구조:
+
+```
+out/admin/posts/__next.admin/posts/__PAGE__.txt
+```
+
+Firebase가 변환한 요청 경로:
+
+```
+/admin/posts/__next.admin.posts.__PAGE__.txt  ← 404
+```
+
+디렉터리 구분자(`/`)를 `.`으로 합쳐 경로가 달라지면서 파일을 찾지 못함.
+
+### 원인 C — `app/page.tsx` loading 상태 누락
 
 홈 화면이 Client Component로 전환된 이후, Firestore fetch가 완료되기 전  
 빈 배열(`[]`)이 `ProjectList`에 전달됨.
@@ -70,38 +101,44 @@ fetch 완료까지 잠깐 해당 텍스트가 노출되는 깜빡임 발생.
 - **장점**: 새 포스트 등 빌드 후 추가된 URL도 catch-all로 처리 가능
 - **단점**: 관리가 필요한 예외 경로가 늘어남, 경로 추가마다 수동 업데이트 필요
 
-### 방법 2 — catch-all rewrite 제거 + cleanUrls 사용 (선택)
+### 방법 2 — catch-all rewrite 제거 + cleanUrls 사용
 
-`"**"` catch-all을 제거하고 `cleanUrls: true`로 정적 파일을 직접 서빙.  
-빌드 후 추가된 블로그 포스트 URL은 `/blog/**` 한정 rewrite로 처리.
+`"**"` catch-all을 제거하고 `cleanUrls: true`로 정적 파일을 직접 서빙.
 
 - **장점**: 정적 파일이 존재하는 경로는 항상 올바르게 서빙, 규칙 단순화
-- **단점**: 블로그 외 경로에서 빌드 후 신규 추가 URL 미대응 (현재 프로젝트 구조상 해당 없음)
+- **단점**: `cleanUrls`가 RSC 페이로드 파일 경로를 평탄화해 404 발생 (→ 증상 2)
+
+### 방법 3 — catch-all rewrite 제거 (cleanUrls 미사용) (선택)
+
+`"**"` catch-all만 제거하고 `cleanUrls`는 추가하지 않음.  
+Firebase Hosting은 `cleanUrls` 없이도 `.html` 파일을 확장자 없는 URL로 기본 서빙함.
+
+- **장점**: RSC 경로 평탄화 문제 없음, 정적 파일 직접 서빙
+- **단점**: 없음
 
 ---
 
 ## 4. 선택한 해결 방식 및 이유
 
-**방법 2 — catch-all rewrite 제거 + cleanUrls**를 선택.
+**방법 3 — catch-all rewrite 제거 (cleanUrls 미사용)**를 선택.
 
-| 판단 기준        | 이유                                                   |
-| ---------------- | ------------------------------------------------------ |
-| 현재 라우트 구조 | 동적으로 새 경로가 추가되는 경우는 `/blog/[slug]`뿐    |
-| 규칙 단순성      | catch-all 제거로 의도치 않은 라우팅 가로채기 원천 방지 |
-| 유지보수         | 새 경로 추가 시 예외 규칙을 관리할 필요 없음           |
+| 판단 기준          | 이유                                                                  |
+| ------------------ | --------------------------------------------------------------------- |
+| RSC 호환성         | `cleanUrls`가 Next.js RSC 페이로드 경로를 깨뜨림 → 방법 2 제외        |
+| Firebase 기본 동작 | `.html` 파일 존재 시 확장자 없는 URL로 자동 서빙 → `cleanUrls` 불필요 |
+| 규칙 단순성        | catch-all 제거로 의도치 않은 라우팅 가로채기 원천 방지                |
 
 ---
 
 ## 5. 적용 내용
 
-### 5-1. `firebase.json` — catch-all 제거 및 cleanUrls 추가
+### 5-1. `firebase.json` — catch-all 제거 (cleanUrls 미사용)
 
 ```json
 {
   "hosting": {
     "public": "out",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "cleanUrls": true,
     "rewrites": [
       {
         "source": "/blog/**",
@@ -142,13 +179,26 @@ useEffect(() => {
 
 ---
 
+### 5-4. `.gitignore` — `.firebase/` 추가
+
+Firebase CLI 배포 시 생성되는 캐시 파일(`hosting.*.cache`)이 git에 추적되는 문제 수정.
+
+```
+# firebase
+.firebase/
+```
+
+---
+
 ## 6. 결과
 
 | 상황                     | 변경 전                       | 변경 후                 |
 | ------------------------ | ----------------------------- | ----------------------- |
 | `/admin/login` 직접 접속 | 홈 화면으로 리다이렉트        | 로그인 페이지 정상 표시 |
 | `/admin/**` 모든 경로    | 홈으로 리다이렉트             | 각 페이지 정상 서빙     |
+| 관리자 페이지 RSC 파일   | 404 오류                      | 정상 로드               |
 | 홈 화면 프로젝트 섹션    | 로딩 전 "없습니다." 순간 표시 | 데이터 준비 후 렌더링   |
+| `.firebase/` 캐시 파일   | git 추적됨                    | `.gitignore`로 제외     |
 
 ## 7. 참고 — 브라우저 캐시 주의
 
