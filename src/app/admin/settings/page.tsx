@@ -97,7 +97,7 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl space-y-8">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
