@@ -5,8 +5,24 @@ import { ArrowDown, GitFork, Link2, Mail } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
+import { SiteSettings } from "@/types/siteSettings";
 
-export function HeroSection() {
+interface HeroSectionProps {
+  settings?: SiteSettings["hero"];
+  contact?: SiteSettings["contact"];
+}
+
+export function HeroSection({ settings, contact }: HeroSectionProps) {
+  const greeting = settings?.greeting ?? "Hello, World! 👋";
+  const name = settings?.name ?? siteConfig.author;
+  const title = settings?.title ?? siteConfig.authorTitle;
+  const bio = settings?.bio ?? siteConfig.authorBio;
+  const github = contact?.github ?? siteConfig.links.github;
+  const linkedin = contact?.linkedin ?? siteConfig.links.linkedin;
+  const email = contact?.email
+    ? `mailto:${contact.email}`
+    : siteConfig.links.email;
+
   return (
     <section className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center text-center px-4 py-20">
       <motion.div
@@ -22,7 +38,7 @@ export function HeroSection() {
           transition={{ delay: 0.1, duration: 0.5 }}
           className="text-sm font-medium text-primary mb-4 tracking-widest uppercase"
         >
-          Hello, World! 👋
+          {greeting}
         </motion.p>
 
         {/* Name */}
@@ -34,7 +50,7 @@ export function HeroSection() {
         >
           저는{" "}
           <span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
-            {siteConfig.author}
+            {name}
           </span>
           입니다
         </motion.h1>
@@ -46,7 +62,7 @@ export function HeroSection() {
           transition={{ delay: 0.3, duration: 0.6 }}
           className="text-xl sm:text-2xl font-semibold text-muted-foreground mb-4"
         >
-          {siteConfig.authorTitle}
+          {title}
         </motion.p>
 
         {/* Bio */}
@@ -56,7 +72,7 @@ export function HeroSection() {
           transition={{ delay: 0.4, duration: 0.6 }}
           className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed"
         >
-          {siteConfig.authorBio}
+          {bio}
         </motion.p>
 
         {/* CTA Buttons */}
@@ -95,7 +111,7 @@ export function HeroSection() {
           className="flex items-center justify-center gap-4"
         >
           <Link
-            href={siteConfig.links.github}
+            href={github}
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-foreground transition-colors"
@@ -103,7 +119,7 @@ export function HeroSection() {
             <GitFork className="size-5" />
           </Link>
           <Link
-            href={siteConfig.links.linkedin}
+            href={linkedin}
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-foreground transition-colors"
@@ -111,7 +127,7 @@ export function HeroSection() {
             <Link2 className="size-5" />
           </Link>
           <Link
-            href={siteConfig.links.email}
+            href={email}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <Mail className="size-5" />

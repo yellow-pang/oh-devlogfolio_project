@@ -1,23 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { SkillGroup, defaultSiteSettings } from "@/types/siteSettings";
 
-const skills = [
-  {
-    category: "Frontend",
-    items: ["React", "Next.js", "TypeScript", "Tailwind CSS", "HTML/CSS"],
-  },
-  {
-    category: "State & Data",
-    items: ["Zustand", "React Query", "SWR", "Firebase", "Firestore"],
-  },
-  {
-    category: "Tools & Others",
-    items: ["Git", "Figma", "Storybook", "Vercel", "ESLint"],
-  },
-];
+interface SkillSectionProps {
+  skills?: SkillGroup[];
+}
 
-export function SkillSection() {
+export function SkillSection({ skills }: SkillSectionProps) {
+  const skillGroups = skills ?? defaultSiteSettings.skills;
   return (
     <section className="py-20 px-4 bg-muted/40">
       <div className="max-w-6xl mx-auto">
@@ -40,7 +31,7 @@ export function SkillSection() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {skills.map((group, groupIndex) => (
+          {skillGroups.map((group, groupIndex) => (
             <motion.div
               key={group.category}
               initial={{ opacity: 0, y: 30 }}

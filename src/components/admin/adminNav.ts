@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FolderKanban, FileText, Tag } from "lucide-react";
+import {
+  LayoutDashboard,
+  FolderKanban,
+  FileText,
+  Tag,
+  Settings,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const adminNav = [
@@ -23,6 +29,11 @@ const adminNav = [
     label: "카테고리",
     href: "/admin/categories",
     icon: Tag,
+  },
+  {
+    label: "사이트 설정",
+    href: "/admin/settings",
+    icon: Settings,
   },
 ];
 
