@@ -5,8 +5,18 @@ import Link from "next/link";
 import { Mail, GitFork, Link2 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
+import { SiteSettings } from "@/types/siteSettings";
 
-export function ContactSection() {
+interface ContactSectionProps {
+  contact?: SiteSettings["contact"];
+}
+
+export function ContactSection({ contact }: ContactSectionProps) {
+  const email = contact?.email
+    ? `mailto:${contact.email}`
+    : siteConfig.links.email;
+  const github = contact?.github ?? siteConfig.links.github;
+  const linkedin = contact?.linkedin ?? siteConfig.links.linkedin;
   return (
     <section className="py-20 px-4">
       <div className="max-w-2xl mx-auto text-center">
@@ -28,7 +38,7 @@ export function ContactSection() {
 
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
-              href={siteConfig.links.email}
+              href={email}
               className={buttonVariants({
                 size: "lg",
                 className: "rounded-full px-8",
@@ -38,7 +48,7 @@ export function ContactSection() {
               이메일 보내기
             </Link>
             <Link
-              href={siteConfig.links.github}
+              href={github}
               target="_blank"
               rel="noopener noreferrer"
               className={buttonVariants({
@@ -51,7 +61,7 @@ export function ContactSection() {
               GitHub
             </Link>
             <Link
-              href={siteConfig.links.linkedin}
+              href={linkedin}
               target="_blank"
               rel="noopener noreferrer"
               className={buttonVariants({
