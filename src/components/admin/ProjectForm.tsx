@@ -67,8 +67,11 @@ export function ProjectForm({
   const projectType = watch("projectType");
   const status = watch("status");
 
-  const { fields: challengeFields, append: appendChallenge, remove: removeChallenge } =
-    useFieldArray({ control, name: "challenges" as never });
+  const {
+    fields: challengeFields,
+    append: appendChallenge,
+    remove: removeChallenge,
+  } = useFieldArray({ control, name: "challenges" as never });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -289,7 +292,9 @@ export function ProjectForm({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => appendChallenge({ problem: "", solution: "" } as never)}
+              onClick={() =>
+                appendChallenge({ problem: "", solution: "" } as never)
+              }
             >
               <Plus className="size-3.5 mr-1" />
               항목 추가
@@ -304,7 +309,9 @@ export function ProjectForm({
             {(challengeFields as { id: string }[]).map((field, idx) => (
               <div key={field.id} className="rounded-lg border p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-muted-foreground">#{idx + 1}</span>
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    #{idx + 1}
+                  </span>
                   <Button
                     type="button"
                     variant="ghost"
@@ -316,7 +323,12 @@ export function ProjectForm({
                   </Button>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor={`challenges.${idx}.problem`} className="text-xs">문제</Label>
+                  <Label
+                    htmlFor={`challenges.${idx}.problem`}
+                    className="text-xs"
+                  >
+                    문제
+                  </Label>
                   <Input
                     id={`challenges.${idx}.problem`}
                     {...register(`challenges.${idx}.problem` as never)}
@@ -324,7 +336,12 @@ export function ProjectForm({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor={`challenges.${idx}.solution`} className="text-xs">해결 방법</Label>
+                  <Label
+                    htmlFor={`challenges.${idx}.solution`}
+                    className="text-xs"
+                  >
+                    해결 방법
+                  </Label>
                   <Input
                     id={`challenges.${idx}.solution`}
                     {...register(`challenges.${idx}.solution` as never)}
