@@ -1,6 +1,7 @@
 "use client";
 
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch, useFieldArray } from "react-hook-form";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,6 +66,9 @@ export function ProjectForm({
   const thumbnailUrl = useWatch({ control, name: "thumbnailUrl" });
   const projectType = watch("projectType");
   const status = watch("status");
+
+  const { fields: challengeFields, append: appendChallenge, remove: removeChallenge } =
+    useFieldArray({ control, name: "challenges" as never });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -278,39 +282,58 @@ export function ProjectForm({
         </div>
 
         {/* 기술적 도전과제 */}
-        <div className="space-y-1.5 mt-4">
-          <Label htmlFor="challenges">
-            기술적 도전과제 & 해결 방법{" "}
-            <span className="font-normal text-muted-foreground">
-              (문제:::해결 형식, 줄바꿈으로 구분)
-            </span>
-          </Label>
-          <Textarea
-            id="challenges"
-            {...register("challenges", {
-              setValueAs: (v) => {
-                if (typeof v !== "string") return v;
-                return v
-                  .split("\n")
-                  .map((s: string) => s.trim())
-                  .filter(Boolean)
-                  .map((s: string) => {
-                    const [problem, ...rest] = s.split(":::");
-                    return {
-                      problem: problem.trim(),
-                      solution: rest.join(":::").trim(),
-                    };
-                  });
-              },
-            })}
-            placeholder={
-              "정적 빌드 후 최신 데이터 미반영:::ISR/SSR 전략 도입으로 해결\n이미지 최적화 필요:::next/image + WebP 포맷 적용"
-            }
-            rows={3}
-            defaultValue={defaultValues?.challenges
-              ?.map((c) => `${c.problem}:::${c.solution}`)
-              .join("\n")}
-          />
+        <div className="space-y-2 mt-4">
+          <div className="flex items-center justify-between">
+            <Label>기술적 도전과제 & 해결 방법</Label>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => appendChallenge({ problem: "", solution: "" } as never)}
+            >
+              <Plus className="size-3.5 mr-1" />
+              항목 추가
+            </Button>
+          </div>
+          {(challengeFields as { id: string }[]).length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              항목 추가 버튼을 눌러 도전과제를 등록하세요.
+            </p>
+          )}
+          <div className="space-y-3">
+            {(challengeFields as { id: string }[]).map((field, idx) => (
+              <div key={field.id} className="rounded-lg border p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-muted-foreground">#{idx + 1}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeChallenge(idx)}
+                    className="size-7 p-0 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`challenges.${idx}.problem`} className="text-xs">문제</Label>
+                  <Input
+                    id={`challenges.${idx}.problem`}
+                    {...register(`challenges.${idx}.problem` as never)}
+                    placeholder="예: 정적 빌드 후 최신 데이터가 반영되지 않음"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`challenges.${idx}.solution`} className="text-xs">해결 방법</Label>
+                  <Input
+                    id={`challenges.${idx}.solution`}
+                    {...register(`challenges.${idx}.solution` as never)}
+                    placeholder="예: ISR/SSR 전략 도입으로 실시간 데이터 반영"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* 성과 */}
