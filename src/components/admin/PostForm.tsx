@@ -35,7 +35,7 @@ export function PostForm({ defaultValues, onSubmit, onCancel }: PostFormProps) {
       excerpt: defaultValues?.excerpt ?? "",
       content: defaultValues?.content ?? "",
       thumbnailUrl:
-        defaultValues?.thumbnailUrl ?? "/images/post-placeholder.png",
+        defaultValues?.thumbnailUrl ?? "/images/common/post_placeholder.png",
       tags: defaultValues?.tags ?? [],
       category: defaultValues?.category ?? "",
       published: defaultValues?.published ?? false,
