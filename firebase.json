@@ -7,6 +7,10 @@
       {
         "source": "/blog/**",
         "destination": "/blog.html"
+      },
+      {
+        "source": "/projects/**",
+        "destination": "/projects.html"
       }
     ]
   }
