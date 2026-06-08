@@ -40,7 +40,7 @@ export function ProjectForm({
       description: defaultValues?.description ?? "",
       longDescription: defaultValues?.longDescription ?? "",
       thumbnailUrl:
-        defaultValues?.thumbnailUrl ?? "/images/project-placeholder.png",
+        defaultValues?.thumbnailUrl ?? "/images/common/project_placeholder.png",
       tags: defaultValues?.tags ?? [],
       techStack: defaultValues?.techStack ?? [],
       githubUrl: defaultValues?.githubUrl ?? "",
